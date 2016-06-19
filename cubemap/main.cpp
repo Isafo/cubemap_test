@@ -158,20 +158,8 @@ int main() {
 
 		
 		//SCENEGRAPH //////////////////////////////////////////////////////////////////////////////////
-		glUseProgram(skyboxShader.programID);
 		setupViewport(window, P);
 		GLRenderCalls();
-
-		// Draw skybox
-		glDepthMask(GL_FALSE);
-		glUniformMatrix4fv(location_skyView, 1, GL_FALSE, glm::value_ptr(camView));
-		glUniformMatrix4fv(location_skyP, 1, GL_FALSE, P);
-		// skybox cube
-		glActiveTexture(GL_TEXTURE0);
-		glUniform1i(location_skyTex, 0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.getTextureID());
-		skybox.render();
-		glDepthMask(GL_TRUE);
 
 		glUseProgram(refraction.programID);
 		glUniformMatrix4fv(locationP, 1, GL_FALSE, P);
@@ -191,6 +179,19 @@ int main() {
 			glUniformMatrix4fv(locationMV, 1, GL_FALSE, MVstack.getCurrentMatrix());
 			object.render();
 		MVstack.pop();
+
+		glUseProgram(skyboxShader.programID);
+
+		// Draw skybox
+		glDepthFunc(GL_LEQUAL);
+		glUniformMatrix4fv(location_skyView, 1, GL_FALSE, glm::value_ptr(camView));
+		glUniformMatrix4fv(location_skyP, 1, GL_FALSE, P);
+		
+		glActiveTexture(GL_TEXTURE0);
+		glUniform1i(location_skyTex, 0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.getTextureID());
+		skybox.render();
+		glDepthFunc(GL_LESS);
 
 		glfwSwapBuffers(window);
 	}
