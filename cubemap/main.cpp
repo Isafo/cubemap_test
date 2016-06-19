@@ -102,6 +102,9 @@ int main() {
 	Shader reflection;
 	reflection.createShader("reflection.vert", "reflection.frag");
 	
+	Shader refraction;
+	refraction.createShader("refraction.vert", "refraction.frag");
+
 	Shader skyboxShader;
 	skyboxShader.createShader("skyboxShaderV.glsl", "skyboxShaderF.glsl");
 
@@ -170,7 +173,7 @@ int main() {
 		skybox.render();
 		glDepthMask(GL_TRUE);
 
-		glUseProgram(reflection.programID);
+		glUseProgram(refraction.programID);
 		glUniformMatrix4fv(locationP, 1, GL_FALSE, P);
 		float tempCamPos[3] = { 0.0, 0.0, 1.0 };
 		glUniformMatrix4fv(locationCamPos, 1, GL_FALSE, tempCamPos);
