@@ -27,6 +27,8 @@ int main() {
 		0.0f, 0.0f, -0.2f, 0.0f };
 	GLint locationP;
 	GLint locationMV;
+	GLint locationCamPos;
+	GLint location_eMap;
 
 	GLint location_skyView;
 	GLint location_skyP;
@@ -97,8 +99,8 @@ int main() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// CREATE OBJECTS ////////////////////////////////////////////////////////////////////////////////
-	Shader ssaoShader;
-	ssaoShader.createShader("vertexshader.glsl", "fragmentshader.glsl");
+	Shader reflection;
+	reflection.createShader("reflection.vert", "reflection.frag");
 	
 	Shader skyboxShader;
 	skyboxShader.createShader("skyboxShaderV.glsl", "skyboxShaderF.glsl");
@@ -117,8 +119,10 @@ int main() {
 	faces.push_back("../texture/skybox/front.jpg");
 	skybox.loadCubemap(faces);
 
-	locationMV = glGetUniformLocation(ssaoShader.programID, "MV");
-	locationP = glGetUniformLocation(ssaoShader.programID, "P");
+	locationMV = glGetUniformLocation(reflection.programID, "MV");
+	locationP = glGetUniformLocation(reflection.programID, "P");
+	locationCamPos = glGetUniformLocation(reflection.programID, "camPos");
+	location_eMap = glGetUniformLocation(reflection.programID, "environmentMap");
 
 	location_skyView = glGetUniformLocation(skyboxShader.programID, "V");
 	location_skyP = glGetUniformLocation(skyboxShader.programID, "P");
@@ -130,8 +134,6 @@ int main() {
 
 	TriangleSoup  object;
 	object.readOBJ("trex.obj");
-
-	Plane plane(0.0, 0.0, 0.0, 10.0, 10.0);
 
 	float rot = 0.0;
 	float lastTime{ 0.0f };
@@ -157,19 +159,25 @@ int main() {
 		setupViewport(window, P);
 		GLRenderCalls();
 
-		// Draw skybox first
-		glDepthMask(GL_FALSE);// Remember to turn depth writing off
+		// Draw skybox
+		glDepthMask(GL_FALSE);
 		glUniformMatrix4fv(location_skyView, 1, GL_FALSE, glm::value_ptr(camView));
 		glUniformMatrix4fv(location_skyP, 1, GL_FALSE, P);
 		// skybox cube
-		//glActiveTexture(GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE0);
 		glUniform1i(location_skyTex, 0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.getTextureID());
 		skybox.render();
 		glDepthMask(GL_TRUE);
 
-		glUseProgram(ssaoShader.programID);
+		glUseProgram(reflection.programID);
 		glUniformMatrix4fv(locationP, 1, GL_FALSE, P);
+		float tempCamPos[3] = { 0.0, 0.0, 1.0 };
+		glUniformMatrix4fv(locationCamPos, 1, GL_FALSE, tempCamPos);
+
+		glActiveTexture(GL_TEXTURE0);
+		glUniform1i(location_eMap, 0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.getTextureID());
 
 		MVstack.push();
 			translateVector[0] = 0.0;
